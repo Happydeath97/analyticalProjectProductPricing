@@ -162,7 +162,7 @@ python src/main.py
 ---
 
 ## Business Perspective
-
+- Include the understanding of the business model into the process... (note fore future update readme)
 **Central business question:**
 > How does product price positioning relative to competitors influence purchase probability and revenue?
 
