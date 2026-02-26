@@ -227,4 +227,3 @@ Results should support:
 
 Based on Data Mining Cup 2017 (adapted) — Andreas Reber, 05.02.2026
 
-"Said"
