@@ -1,6 +1,6 @@
-# 📊 Analytics Project 2026 – Dynamic Pricing & Demand Prediction
+# Analytics Project 2026 – Dynamic Pricing & Demand Prediction
 
-## 📌 Project Overview
+## Project Overview
 
 This project analyzes dynamic pricing strategies in an online pharmacy setting.
 
@@ -15,7 +15,7 @@ The dataset consists of:
 
 ---
 
-## 🎯 Objective
+## Objective
 
 The goal of this project is to:
 
@@ -28,7 +28,7 @@ The goal of this project is to:
 
 ---
 
-## 🏗 Repository Structure
+## Repository Structure
 
 ```
 analyticalProjectProductPricing/
@@ -50,14 +50,14 @@ analyticalProjectProductPricing/
 
 ---
 
-## ⚙️ Environment Setup
+## Environment Setup
 
 ### Create Virtual Environment
 
 **Windows (PowerShell)**
 ```bash
 python -m venv .venv
-.venv\Scripts\activate
+& .\.venv\Scripts\Activate.ps1
 ```
 
 **macOS / Linux**
@@ -161,7 +161,7 @@ python src/main.py
 
 ---
 
-## 📈 Business Perspective
+## Business Perspective
 
 **Central business question:**
 > How does product price positioning relative to competitors influence purchase probability and revenue?
@@ -223,7 +223,7 @@ Results should support:
 
 ---
 
-## 📚 Source
+## Source
 
 Based on Data Mining Cup 2017 (adapted) — Andreas Reber, 05.02.2026
 
