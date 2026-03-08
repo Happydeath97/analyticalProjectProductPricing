@@ -79,3 +79,7 @@ desktop.ini
 *.h5
 *.pt
 *.pth
+# =========================
+# Outputs (charts, exports)
+# =========================
+outputs/
