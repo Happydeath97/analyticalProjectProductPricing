@@ -35,9 +35,9 @@ missing_prices = missing_prices.merge(
 )
 
 # Estimate missing competitorPrice
-missing_prices['estimated_competitorPrice'] = (
+missing_prices['estimated_competitorPrice'] = (round(
     missing_prices['price']
-    + (missing_prices['price'] / 100 * missing_prices['pct_diff'])
+    + (missing_prices['price'] / 100 * missing_prices['pct_diff']), 2)
 )
 
 # Fill back into original dataframe
