@@ -1,6 +1,6 @@
 import pandas as pd
 
-train = pd.read_csv("data/raw/train.csv", sep = "|")
+train = pd.read_csv("../data/raw/train.csv", sep = "|")
 
 # Create bins
 train['price_bin'] = pd.cut(train['price'], bins=50, include_lowest=True)
@@ -51,7 +51,7 @@ train['competitorPrice'] = train['competitorPrice'].fillna(overall_median)
 train = train.drop(columns=['price_bin'])
 
 # Save complete processed dataset
-train.to_csv("data/processed/processedTrain.csv", sep= "|", index=False)
+train.to_csv("../data/processed/processedTrain.csv", sep= "|", index=False)
 
 print("File saved: data/processed/processedTrain.csv")
 print("Remaining missing competitorPrice values:", train['competitorPrice'].isna().sum())
