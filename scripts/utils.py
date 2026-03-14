@@ -40,7 +40,7 @@ def parse_content(value):
 
 def fill_missing_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
 
-    # TODO: CompetitorPrice has many 0.00.This is an error and needs to be cleaned!!!!
+    # TODO: CompetitorPrice has many 0.00.This is an error/flaw in the file and needs to be cleaned!!!!
     """
     This is a function to replace Said's process_train.py
     Fill missing values in the 'competitorPrice' column using price-bin-based estimation.
