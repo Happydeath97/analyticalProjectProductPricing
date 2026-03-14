@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 
 def parse_content(value):
@@ -38,6 +39,8 @@ def parse_content(value):
 
 
 def fill_missing_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
+
+    # TODO: CompetitorPrice has many 0.00.This is an error and needs to be cleaned!!!!
     """
     This is a function to replace Said's process_train.py
     Fill missing values in the 'competitorPrice' column using price-bin-based estimation.
@@ -178,6 +181,47 @@ def encode_campaign_index(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
+    """
+        Create price comparison features between our price and the competitor price.
+
+        Features created:
+        - price_diff_competitor: absolute difference (price - competitorPrice)
+            This feature shows the absolute difference between the price and the competitor price.
+            for example:
+                9 (our price) - 10 (competitor price) = -1
+                10 (our price) - 9 (competitor price) = 1
+        - price_ratio_competitor: relative ratio (price / competitorPrice)
+            - This feature shows ratio of our price / competitor price
+            - A value of 1.10 means you are 10% more expensive; 0.90 means you are 10% cheaper.
+            - Advantage: allows the model to treat a $10 vs $11 comparison the same as a $100 vs $110 comparison
+            - Best for  Model: Random Forests or XGBoost
+        - price_pct_diff_competitor: percentage difference relative to competitorPrice
+            - The percentage difference relative to the competitor’s price
+
+
+
+
+
+        """
+    df = df.copy()
+
+    required_cols = ["price", "competitorPrice"]
+    for col in required_cols:
+        if col not in df.columns:
+            raise KeyError(f"Missing required column: {col}")
+
+    competitor_safe = df["competitorPrice"].replace(0, np.nan)
+
+    # Use .round() as a method on the Series, not as a wrapper function
+    df["price_diff_competitor"] = (df["price"] - df["competitorPrice"]).round(2)
+    df["price_ratio_competitor"] = (df["price"] / competitor_safe).round(2)
+
+    df["price_pct_diff_competitor"] = (
+            ((df["price"] - df["competitorPrice"]) / competitor_safe) * 100
+    ).round(2)
+
+    return df
 
 if __name__ == "__main__":
     pass

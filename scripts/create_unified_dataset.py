@@ -1,7 +1,12 @@
 import pandas as pd
 
-from utils import parse_content, fill_missing_competitor_price, normalize_pharmform, encode_campaign_index
-
+from utils import (
+    parse_content,
+    fill_missing_competitor_price,
+    normalize_pharmform,
+    encode_campaign_index,
+    difference_competitor_price
+)
 
 if '__main__' == __name__:
     items = pd.read_csv("../data/raw/items.csv", sep="|")
@@ -16,6 +21,7 @@ if '__main__' == __name__:
     # if change is too complex make a function that inputs a df and return new df like so:
     new_df = fill_missing_competitor_price(new_df)
     new_df = encode_campaign_index(new_df)
+    new_df = difference_competitor_price(new_df)
 
     # single feature cleaning ----- This is where we can apply single feature functions
     new_df["content"] = new_df["content"].apply(parse_content)
