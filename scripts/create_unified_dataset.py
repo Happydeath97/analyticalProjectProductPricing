@@ -1,5 +1,6 @@
 import pandas as pd
 
+from scripts.utils import competitor_price_equals_0
 from utils import (
     parse_content,
     fill_missing_competitor_price,
@@ -22,6 +23,7 @@ if '__main__' == __name__:
     new_df = fill_missing_competitor_price(new_df)
     new_df = encode_campaign_index(new_df)
     new_df = difference_competitor_price(new_df)
+    new_df = competitor_price_equals_0(new_df)
 
     # single feature cleaning ----- This is where we can apply single feature functions
     new_df["content"] = new_df["content"].apply(parse_content)
