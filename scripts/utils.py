@@ -262,14 +262,12 @@ def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
         if col not in df.columns:
             raise KeyError(f"Missing required column: {col}")
 
-    competitor_safe = df["competitorPrice"].replace(0, np.nan)
-
     # Use .round() as a method on the Series, not as a wrapper function
     df["price_diff_competitor"] = (df["price"] - df["competitorPrice"]).round(2)
-    df["price_ratio_competitor"] = (df["price"] / competitor_safe).round(2)
+    df["price_ratio_competitor"] = (df["price"] / df["competitorPrice"]).round(2)
 
     df["price_pct_diff_competitor"] = (
-            ((df["price"] - df["competitorPrice"]) / competitor_safe) * 100
+            ((df["price"] - df["competitorPrice"]) / df["competitorPrice"]) * 100
     ).round(2)
 
     return df
