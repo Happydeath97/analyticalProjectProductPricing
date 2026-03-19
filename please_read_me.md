@@ -1,6 +1,5 @@
 # Data Cleaning Comparison: My Approach vs Yours krystof
 
----
 ## 1. Missing competitorPrice Values
 
 **`scripts/utils.py`** estimates missing competitor prices using price-bin
