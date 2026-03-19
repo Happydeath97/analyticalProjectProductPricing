@@ -1,10 +1,6 @@
 # Data Cleaning Comparison: My Approach vs Yours krystof
 
-This document compares the data preparation decisions I made. For each difference I explain
-what I did, what you did, and why I went a different way.
-
 ---
-
 ## 1. Missing competitorPrice Values
 
 **`scripts/utils.py`** estimates missing competitor prices using price-bin
