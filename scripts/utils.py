@@ -40,7 +40,6 @@ def parse_content(value):
 
 def fill_missing_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
 
-    # TODO: CompetitorPrice has many 0.00.This is an error/flaw in the file and needs to be cleaned!!!!
     """
     This is a function to replace Said's process_train.py
     Fill missing values in the 'competitorPrice' column using price-bin-based estimation.
@@ -122,6 +121,58 @@ def fill_missing_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def competitor_price_equals_0(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replace erroneous competitorPrice == 0 values with estimates based on
+    the average percentage difference between price and competitorPrice
+    within price bins.
+    """
+
+    df = df.copy()
+
+    # Build bins from product price
+    df["price_bin"] = pd.cut(df["price"], bins=50, include_lowest=True)
+
+    # Use only valid competitor prices for estimating the relationship
+    valid_mask = df["competitorPrice"].notna() & df["competitorPrice"].gt(0)
+
+    bin_stats = (
+        df.loc[valid_mask]
+        .groupby("price_bin", observed=True)
+        .agg(
+            avg_price=("price", "mean"),
+            avg_competitor=("competitorPrice", "mean")
+        )
+    )
+
+    # Average relative difference per bin
+    bin_stats["pct_diff"] = (
+        (bin_stats["avg_competitor"] - bin_stats["avg_price"])
+        / bin_stats["avg_price"]
+    )
+
+    # Rows with erroneous competitor price
+    error_mask = df["competitorPrice"] == 0
+
+    # Map bin-level pct_diff back to those rows
+    df.loc[error_mask, "pct_diff"] = df.loc[error_mask, "price_bin"].map(bin_stats["pct_diff"])
+
+    # Estimate competitor price
+    df.loc[error_mask, "competitorPrice"] = (
+        df.loc[error_mask, "price"] * (1 + df.loc[error_mask, "pct_diff"])
+    )
+
+    # Fallback for rows where bin-based estimate was not possible
+    overall_median = df.loc[valid_mask, "competitorPrice"].median()
+    df["competitorPrice"] = df["competitorPrice"].fillna(overall_median)
+
+    # Optional: ensure no non-positive competitor prices remain
+    df.loc[df["competitorPrice"] <= 0, "competitorPrice"] = overall_median
+
+    # Clean helper columns
+    df = df.drop(columns=["price_bin", "pct_diff"], errors="ignore")
+
+    return df
 
 def normalize_pharmform(value):
     """
@@ -211,14 +262,12 @@ def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
         if col not in df.columns:
             raise KeyError(f"Missing required column: {col}")
 
-    competitor_safe = df["competitorPrice"].replace(0, np.nan)
-
     # Use .round() as a method on the Series, not as a wrapper function
     df["price_diff_competitor"] = (df["price"] - df["competitorPrice"]).round(2)
-    df["price_ratio_competitor"] = (df["price"] / competitor_safe).round(2)
+    df["price_ratio_competitor"] = (df["price"] / df["competitorPrice"]).round(2)
 
     df["price_pct_diff_competitor"] = (
-            ((df["price"] - df["competitorPrice"]) / competitor_safe) * 100
+            ((df["price"] - df["competitorPrice"]) / df["competitorPrice"]) * 100
     ).round(2)
 
     return df
