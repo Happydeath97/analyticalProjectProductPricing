@@ -1,8 +1,6 @@
 # Data Cleaning Comparison: My Approach vs Yours krystof
 
-This document compares the data preparation decisions I made in
-`02_data_preparation.ipynb` against your approach in
-`create_unified_dataset.py` and `utils.py`. For each difference I explain
+This document compares the data preparation decisions I made. For each difference I explain
 what I did, what you did, and why I went a different way.
 
 ---
