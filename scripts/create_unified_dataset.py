@@ -21,9 +21,10 @@ if '__main__' == __name__:
     # first all one-liners that work/change the whole df, then oneliners that work with 1 feature only
     # if change is too complex make a function that inputs a df and return new df like so:
     new_df = fill_missing_competitor_price(new_df)
+    new_df = competitor_price_equals_0(new_df)
     new_df = encode_campaign_index(new_df)
     new_df = difference_competitor_price(new_df)
-    new_df = competitor_price_equals_0(new_df)
+
 
     # single feature cleaning ----- This is where we can apply single feature functions
     new_df["content"] = new_df["content"].apply(parse_content)

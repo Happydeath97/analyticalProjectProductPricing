@@ -158,9 +158,9 @@ def competitor_price_equals_0(df: pd.DataFrame) -> pd.DataFrame:
     df.loc[error_mask, "pct_diff"] = df.loc[error_mask, "price_bin"].map(bin_stats["pct_diff"])
 
     # Estimate competitor price
-    df.loc[error_mask, "competitorPrice"] = (
-        df.loc[error_mask, "price"] * (1 + df.loc[error_mask, "pct_diff"])
-    )
+    df.loc[error_mask, "competitorPrice"] = (round(
+        df.loc[error_mask, "price"] * (1 + df.loc[error_mask, "pct_diff"]), 2
+    ))
 
     # Fallback for rows where bin-based estimate was not possible
     overall_median = df.loc[valid_mask, "competitorPrice"].median()
