@@ -35,7 +35,7 @@ def parse_content(value):
         pass
         return pd.NA
     # case like normal number
-    return int(float(value))
+    return float(value)
 
 
 def fill_missing_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
