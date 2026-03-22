@@ -1,9 +1,9 @@
 import pandas as pd
 
-from scripts.utils import competitor_price_equals_0
 from utils import (
     parse_content,
-    fill_missing_competitor_price,
+    replace_zero_competitor_price,
+    add_has_competitor_feature,
     normalize_pharmform,
     encode_campaign_index,
     difference_competitor_price
@@ -20,8 +20,8 @@ if '__main__' == __name__:
     # Here is the space for computing new features, or for example creating onehot encoding
     # first all one-liners that work/change the whole df, then oneliners that work with 1 feature only
     # if change is too complex make a function that inputs a df and return new df like so:
-    new_df = fill_missing_competitor_price(new_df)
-    new_df = competitor_price_equals_0(new_df)
+    new_df = replace_zero_competitor_price(new_df)
+    new_df = add_has_competitor_feature(new_df)
     new_df = encode_campaign_index(new_df)
     new_df = difference_competitor_price(new_df)
 

@@ -38,139 +38,44 @@ def parse_content(value):
     return float(value)
 
 
-def fill_missing_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
-
+def replace_zero_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
     """
-    This is a function to replace Said's process_train.py
-    Fill missing values in the 'competitorPrice' column using price-bin-based estimation.
+    Replace competitorPrice == 0 with NaN.
 
-    The method groups rows into bins according to the 'price' column, then calculates
-    the average percentage difference between 'price' and 'competitorPrice' for rows
-    where 'competitorPrice' is available. Missing competitor prices are estimated
-    using the average percentage difference of the corresponding price bin.
-
-    If a missing value still cannot be estimated, for example because its bin has
-    no available competitor price statistics, the method fills it with the overall
-    median of the 'competitorPrice' column.
+    Assumption:
+    - A value of 0 indicates no valid competitor price (not a real price)
 
     Parameters:
-        df (pd.DataFrame):
-            Input dataframe containing at least the columns:
-            - 'price'
-            - 'competitorPrice'
+        df (pd.DataFrame): Input dataframe with 'competitorPrice'
 
     Returns:
-        pd.DataFrame:
-            A copy of the input dataframe where missing values in
-            'competitorPrice' have been filled.
-
-    Raises:
-        KeyError:
-            If required columns such as 'price' or 'competitorPrice' are missing.
+        pd.DataFrame: Copy of dataframe with 0 replaced by NaN
     """
     df = df.copy()
 
-    # create bins from price
-    df["price_bin"] = pd.cut(df["price"], bins=50, include_lowest=True)
+    if "competitorPrice" not in df.columns:
+        raise KeyError("Column 'competitorPrice' not found")
 
-    # compute average price and competitorPrice for each bin
-    bin_stats = (
-        df[df["competitorPrice"].notna()]
-        .groupby("price_bin", observed=True)
-        .agg(
-            avg_price=("price", "mean"),
-            avg_competitor=("competitorPrice", "mean")
-        )
+    df["competitorPrice"] = df["competitorPrice"].where(
+        df["competitorPrice"] > 0,
+        np.nan
     )
-
-    # compute average percentage difference in each bin
-    bin_stats["pct_diff"] = (
-        (bin_stats["avg_competitor"] - bin_stats["avg_price"])
-        / bin_stats["avg_price"]
-    ) * 100
-
-    # find rows where competitorPrice is missing
-    missing_mask = df["competitorPrice"].isna()
-
-    missing_prices = df.loc[missing_mask, ["price", "price_bin"]].copy()
-
-    # attach pct_diff from the matching price bin
-    missing_prices = missing_prices.merge(
-        bin_stats[["pct_diff"]],
-        left_on="price_bin",
-        right_index=True,
-        how="left"
-    )
-
-    # estimate missing competitorPrice
-    missing_prices["estimated_competitorPrice"] = round(
-        missing_prices["price"] +
-        (missing_prices["price"] / 100 * missing_prices["pct_diff"]),
-        2
-    )
-
-    # write estimated values back
-    df.loc[missing_mask, "competitorPrice"] = missing_prices["estimated_competitorPrice"].values
-
-    # fallback if some values are still missing
-    overall_median = df["competitorPrice"].median()
-    df["competitorPrice"] = df["competitorPrice"].fillna(overall_median)
-
-    # remove helper column
-    df = df.drop(columns=["price_bin"])
 
     return df
 
-def competitor_price_equals_0(df: pd.DataFrame) -> pd.DataFrame:
+def add_has_competitor_feature(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Replace erroneous competitorPrice == 0 values with estimates based on
-    the average percentage difference between price and competitorPrice
-    within price bins.
+    Create a binary feature indicating whether a competitor exists.
+    Feature:
+    - has_competitor = 1 if competitorPrice is not NaN
+    - has_competitor = 0 if competitorPrice is NaN
     """
-
     df = df.copy()
 
-    # Build bins from product price
-    df["price_bin"] = pd.cut(df["price"], bins=50, include_lowest=True)
+    if "competitorPrice" not in df.columns:
+        raise KeyError("Column 'competitorPrice' not found")
 
-    # Use only valid competitor prices for estimating the relationship
-    valid_mask = df["competitorPrice"].notna() & df["competitorPrice"].gt(0)
-
-    bin_stats = (
-        df.loc[valid_mask]
-        .groupby("price_bin", observed=True)
-        .agg(
-            avg_price=("price", "mean"),
-            avg_competitor=("competitorPrice", "mean")
-        )
-    )
-
-    # Average relative difference per bin
-    bin_stats["pct_diff"] = (
-        (bin_stats["avg_competitor"] - bin_stats["avg_price"])
-        / bin_stats["avg_price"]
-    )
-
-    # Rows with erroneous competitor price
-    error_mask = df["competitorPrice"] == 0
-
-    # Map bin-level pct_diff back to those rows
-    df.loc[error_mask, "pct_diff"] = df.loc[error_mask, "price_bin"].map(bin_stats["pct_diff"])
-
-    # Estimate competitor price
-    df.loc[error_mask, "competitorPrice"] = (round(
-        df.loc[error_mask, "price"] * (1 + df.loc[error_mask, "pct_diff"]), 2
-    ))
-
-    # Fallback for rows where bin-based estimate was not possible
-    overall_median = df.loc[valid_mask, "competitorPrice"].median()
-    df["competitorPrice"] = df["competitorPrice"].fillna(overall_median)
-
-    # Optional: ensure no non-positive competitor prices remain
-    df.loc[df["competitorPrice"] <= 0, "competitorPrice"] = overall_median
-
-    # Clean helper columns
-    df = df.drop(columns=["price_bin", "pct_diff"], errors="ignore")
+    df["has_competitor"] = df["competitorPrice"].notna().astype(int)
 
     return df
 
@@ -249,26 +154,30 @@ def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
             - Best for  Model: Random Forests or XGBoost
         - price_pct_diff_competitor: percentage difference relative to competitorPrice
             - The percentage difference relative to the competitor’s price
-
-
-
-
-
-        """
+    """
     df = df.copy()
 
-    required_cols = ["price", "competitorPrice"]
-    for col in required_cols:
-        if col not in df.columns:
-            raise KeyError(f"Missing required column: {col}")
+    # Mask for valid competitor
+    valid_mask = df["competitorPrice"].notna()
 
-    # Use .round() as a method on the Series, not as a wrapper function
-    df["price_diff_competitor"] = (df["price"] - df["competitorPrice"]).round(2)
-    df["price_ratio_competitor"] = (df["price"] / df["competitorPrice"]).round(2)
-
-    df["price_pct_diff_competitor"] = (
-            ((df["price"] - df["competitorPrice"]) / df["competitorPrice"]) * 100
+    # Absolute difference (safe: NaN propagates automatically)
+    df["price_diff_competitor"] = (
+            df["price"] - df["competitorPrice"]
     ).round(2)
+
+    # Ratio (where competitor exists)
+    df["price_ratio_competitor"] = np.where(
+        valid_mask,
+        (df["price"] / df["competitorPrice"]).round(4),
+        np.nan
+    )
+
+    # Percentage difference (where competitor exists)
+    df["price_pct_diff_competitor"] = np.where(
+        valid_mask,
+        ((df["price"] - df["competitorPrice"]) / df["competitorPrice"] * 100).round(2),
+        np.nan
+    )
 
     return df
 
