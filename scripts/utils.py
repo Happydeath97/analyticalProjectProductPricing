@@ -202,6 +202,7 @@ def add_is_post_shift(df: pd.DataFrame, shift_day: int = 26) -> pd.DataFrame:
     if "day" not in df.columns:
         raise KeyError("'day' column not found in dataframe")
     df["is_post_shift_day"] = (df["day"] >= shift_day).astype(int)
+    return df
     
 def find_frequency_threshold(series: pd.Series, coverage_target: float) -> int:
     """
