@@ -179,6 +179,30 @@ def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
+def add_is_post_shift(df: pd.DataFrame, shift_day: int = 26) -> pd.DataFrame:
+    """
+    @Sameh
+    This function creates a binary feature indicating whether an interaction occurred after a specified shift day.
+    This been identified in the EDA phase:
+    EDA identified a structural break at day 26 where daily interaction
+    volume increased by 59.8% while the order rate dropped 14.15 percentage
+    points permanently. The same product at the same price converts
+    differently depending on which regime the interaction occurred in.
+
+    Features created:
+    is_post_shift_day = 1 if day >= shift_day else 0
+
+    Parameters:
+        :param df: pd.DataFrame A copy of the dataframe with is_post_shift_day binary col. added.
+        :param shift_day: (int) The day threshold to determine the shift. Default is 26 is found in the EDA phase.
+    Raises:
+        KeyError: If the 'day' column is not found in the dataframe, Just as best practice to avoid silent errors.
+    """
+    df = df.copy()
+    if "day" not in df.columns:
+        raise KeyError("'day' column not found in dataframe")
+    df["is_post_shift_day"] = (df["day"] >= shift_day).astype(int)
+    
 def find_frequency_threshold(series: pd.Series, coverage_target: float) -> int:
     """
     Finds the minimum frequency count needed so that the most common

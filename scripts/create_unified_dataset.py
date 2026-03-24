@@ -7,6 +7,7 @@ from utils import (
     normalize_pharmform,
     encode_campaign_index,
     difference_competitor_price,
+    add_is_post_shift
     group_rare_categories_by_coverage
 )
 
@@ -25,6 +26,7 @@ if '__main__' == __name__:
     new_df = add_has_competitor_feature(new_df)
     new_df = encode_campaign_index(new_df)
     new_df = difference_competitor_price(new_df)
+    new_df = add_is_post_shift(new_df)
     new_df = group_rare_categories_by_coverage(new_df)
 
     # single feature cleaning ----- This is where we can apply single feature functions

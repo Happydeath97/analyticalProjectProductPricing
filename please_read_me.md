@@ -516,6 +516,7 @@ I hope that explains my thinking :-) and as I said, there is no right or
 wrong here, just different approaches with different trade-offs. The key is to be intentional and data-driven in your
 decisions.
 
-That said, your approach is still valid and would work well with the right models and assumptions. The important thing is to understand the implications of each decision and how it interacts with the modeling choices.
+That said, your approach is still valid and would work well with the right models and assumptions. The important thing
+is to understand the implications of each decision and how it interacts with the modeling choices.
 
 That was my personal thinking and at the end of the day, the decision is a team decision :-)
