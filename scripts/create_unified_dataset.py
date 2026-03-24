@@ -6,7 +6,8 @@ from utils import (
     add_has_competitor_feature,
     normalize_pharmform,
     encode_campaign_index,
-    difference_competitor_price
+    difference_competitor_price,
+    group_rare_categories_by_coverage
 )
 
 if '__main__' == __name__:
@@ -24,7 +25,7 @@ if '__main__' == __name__:
     new_df = add_has_competitor_feature(new_df)
     new_df = encode_campaign_index(new_df)
     new_df = difference_competitor_price(new_df)
-
+    new_df = group_rare_categories_by_coverage(new_df)
 
     # single feature cleaning ----- This is where we can apply single feature functions
     new_df["content"] = new_df["content"].apply(parse_content)

@@ -37,7 +37,6 @@ def parse_content(value):
     # case like normal number
     return float(value)
 
-
 def replace_zero_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
     """
     Replace competitorPrice == 0 with NaN.
@@ -94,9 +93,8 @@ def normalize_pharmform(value):
         The cleaned pharmForm value in uppercase, or the original missing value.
     """
     if pd.isna(value):
-        return value
+        return "UNKNOWN"
     return str(value).strip().upper()
-
 
 def encode_campaign_index(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -178,6 +176,27 @@ def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
         ((df["price"] - df["competitorPrice"]) / df["competitorPrice"] * 100).round(2),
         np.nan
     )
+
+    return df
+
+def find_frequency_threshold(series, coverage_target):
+    counts = series.value_counts(dropna=False).sort_values(ascending=False)
+    total = counts.sum()
+    cumulative_coverage = counts.cumsum() / total
+    values_needed = cumulative_coverage[cumulative_coverage <= coverage_target]
+    if len(values_needed) == 0:
+        return counts.iloc[0]
+    threshold = counts.iloc[len(values_needed)]
+    return threshold
+
+def group_rare_categories_by_coverage(df, coverage_target=0.95):
+    high_cardinality_features = ["manufacturer", "group", "category"]
+    coverage_target = 0.95
+
+    for feature in high_cardinality_features:
+        threshold = find_frequency_threshold(df[feature], coverage_target)
+        rare_values = set(df[feature].value_counts()[lambda x: x < threshold].index)
+        df[feature] = df[feature].apply(lambda x: "other" if x in rare_values else x)
 
     return df
 
