@@ -7,7 +7,7 @@ from utils import (
     normalize_pharmform,
     encode_campaign_index,
     difference_competitor_price,
-    add_is_post_shift
+    add_is_post_shift,
     group_rare_categories_by_coverage
 )
 
