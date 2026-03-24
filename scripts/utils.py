@@ -179,7 +179,23 @@ def difference_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def find_frequency_threshold(series, coverage_target):
+def find_frequency_threshold(series: pd.Series, coverage_target: float) -> int:
+    """
+    Finds the minimum frequency count needed so that the most common
+    values in a feature cover the selected share of all rows.
+    This can be used to identify rare values for grouping into "other".
+
+    Example:
+    If coverage_target = 0.95, the function returns the minimum count
+    needed to keep values that together represent about 95% of all
+    interactions in the feature.
+
+    :param series: A pandas Series containing the categorical feature.
+    :param coverage_target: The desired cumulative coverage level
+        between 0 and 1, for example 0.95 for 95%.
+    :return: The frequency threshold count. Values with frequency below
+        this threshold can be treated as rare.
+    """
     counts = series.value_counts(dropna=False).sort_values(ascending=False)
     total = counts.sum()
     cumulative_coverage = counts.cumsum() / total
@@ -189,9 +205,25 @@ def find_frequency_threshold(series, coverage_target):
     threshold = counts.iloc[len(values_needed)]
     return threshold
 
-def group_rare_categories_by_coverage(df, coverage_target=0.95):
+def group_rare_categories_by_coverage(df: pd.DataFrame, coverage_target: float = 0.95) -> pd.DataFrame:
+    """
+    Groups rare values in selected high-cardinality categorical features
+    into the category "other" based on cumulative frequency coverage.
+    This reduces noise from very rare categories while keeping the most
+    common values that represent the majority of interactions.
+
+    Example:
+    If coverage_target = 0.95, the function keeps the most frequent
+    values that together cover about 95% of rows in each selected
+    feature, and replaces the remaining rare values with "other".
+
+    :param df: A pandas DataFrame containing the features to process.
+    :param coverage_target: The desired cumulative coverage level
+        between 0 and 1, for example 0.95 for 95%.
+    :return: The updated DataFrame with rare categories grouped into
+        "other".
+    """
     high_cardinality_features = ["manufacturer", "group", "category"]
-    coverage_target = 0.95
 
     for feature in high_cardinality_features:
         threshold = find_frequency_threshold(df[feature], coverage_target)
