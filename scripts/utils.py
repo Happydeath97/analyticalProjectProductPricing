@@ -37,7 +37,6 @@ def parse_content(value):
     # case like normal number
     return float(value)
 
-
 def replace_zero_competitor_price(df: pd.DataFrame) -> pd.DataFrame:
     """
     Replace competitorPrice == 0 with NaN.
@@ -94,9 +93,8 @@ def normalize_pharmform(value):
         The cleaned pharmForm value in uppercase, or the original missing value.
     """
     if pd.isna(value):
-        return value
+        return "UNKNOWN"
     return str(value).strip().upper()
-
 
 def encode_campaign_index(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -204,6 +202,58 @@ def add_is_post_shift(df: pd.DataFrame, shift_day: int = 26) -> pd.DataFrame:
     if "day" not in df.columns:
         raise KeyError("'day' column not found in dataframe")
     df["is_post_shift_day"] = (df["day"] >= shift_day).astype(int)
+    
+def find_frequency_threshold(series: pd.Series, coverage_target: float) -> int:
+    """
+    Finds the minimum frequency count needed so that the most common
+    values in a feature cover the selected share of all rows.
+    This can be used to identify rare values for grouping into "other".
+
+    Example:
+    If coverage_target = 0.95, the function returns the minimum count
+    needed to keep values that together represent about 95% of all
+    interactions in the feature.
+
+    :param series: A pandas Series containing the categorical feature.
+    :param coverage_target: The desired cumulative coverage level
+        between 0 and 1, for example 0.95 for 95%.
+    :return: The frequency threshold count. Values with frequency below
+        this threshold can be treated as rare.
+    """
+    counts = series.value_counts(dropna=False).sort_values(ascending=False)
+    total = counts.sum()
+    cumulative_coverage = counts.cumsum() / total
+    values_needed = cumulative_coverage[cumulative_coverage <= coverage_target]
+    if len(values_needed) == 0:
+        return counts.iloc[0]
+    threshold = counts.iloc[len(values_needed)]
+    return threshold
+
+def group_rare_categories_by_coverage(df: pd.DataFrame, coverage_target: float = 0.95) -> pd.DataFrame:
+    """
+    Groups rare values in selected high-cardinality categorical features
+    into the category "other" based on cumulative frequency coverage.
+    This reduces noise from very rare categories while keeping the most
+    common values that represent the majority of interactions.
+
+    Example:
+    If coverage_target = 0.95, the function keeps the most frequent
+    values that together cover about 95% of rows in each selected
+    feature, and replaces the remaining rare values with "other".
+
+    :param df: A pandas DataFrame containing the features to process.
+    :param coverage_target: The desired cumulative coverage level
+        between 0 and 1, for example 0.95 for 95%.
+    :return: The updated DataFrame with rare categories grouped into
+        "other".
+    """
+    high_cardinality_features = ["manufacturer", "group", "category"]
+
+    for feature in high_cardinality_features:
+        threshold = find_frequency_threshold(df[feature], coverage_target)
+        rare_values = set(df[feature].value_counts()[lambda x: x < threshold].index)
+        df[feature] = df[feature].apply(lambda x: "other" if x in rare_values else x)
+
     return df
 
 if __name__ == "__main__":
