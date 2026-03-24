@@ -8,7 +8,8 @@ from utils import (
     encode_campaign_index,
     difference_competitor_price,
     add_is_post_shift,
-    group_rare_categories_by_coverage
+    group_rare_categories_by_coverage,
+    price_diff_previous_available_day
 )
 
 if '__main__' == __name__:
@@ -28,6 +29,7 @@ if '__main__' == __name__:
     new_df = difference_competitor_price(new_df)
     new_df = add_is_post_shift(new_df)
     new_df = group_rare_categories_by_coverage(new_df)
+    new_df = price_diff_previous_available_day(new_df)
 
     # single feature cleaning ----- This is where we can apply single feature functions
     new_df["content"] = new_df["content"].apply(parse_content)

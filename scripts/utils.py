@@ -257,5 +257,37 @@ def group_rare_categories_by_coverage(df: pd.DataFrame, coverage_target: float =
 
     return df
 
+def price_diff_previous_available_day(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Feature for price difference between available days.
+    difference = todays price - price previous available day
+    the first day is intentionally NaN
+    """
+    df = df.copy()
+
+    daily_price = (
+        df.sort_values(["pid", "day"])
+          .groupby(["pid", "day"], as_index=False)["price"]
+          .first()
+    )
+
+    daily_price["previous_price"] = (
+        daily_price.groupby("pid")["price"]
+        .shift(1)
+    )
+
+    daily_price["price_diff_vs_previous_available_day"] = (
+        daily_price["price"] - daily_price["previous_price"]
+    )
+
+    df = df.merge(
+        daily_price[["pid", "day", "price_diff_vs_previous_available_day"]],
+        on=["pid", "day"],
+        how="left"
+    )
+
+    return df
+
+
 if __name__ == "__main__":
     pass
