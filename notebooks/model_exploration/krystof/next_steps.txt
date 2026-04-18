@@ -1,0 +1,17 @@
+Inspect class balance of click, basket, and order.
+Rebuild target into one multiclass column: action.
+Verify each row has exactly one final action.
+Remove leaked target-related predictor columns.
+Clean missing values and inconsistent feature values.
+Encode categorical features for modeling.
+Create time-based features like weekday or month.
+Plot target distribution across time.
+Make seasonal plots for action-related patterns.
+Make subseries plots for repeated seasonal behavior.
+Split data into train and test chronologically.
+Train multinomial logistic regression baseline model.
+Train shallow decision tree model.
+Train GAM or additive interpretable model.
+Compare models using multiclass evaluation metrics.
+Inspect feature effects and model explanations.
+Summarize best interpretable model and findings.
