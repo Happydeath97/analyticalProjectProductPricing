@@ -1,0 +1,4 @@
+operating_point,threshold,description,% flagged as buyer,caught buyers (TP),missed buyers (FN),false alarms (FP),precision,recall,F1
+Default,0.5,Standard ML default,4.1,10694,103343,8602,0.554,0.094,0.16
+Balanced,0.23,F1-optimal,50.3,85641,28396,149042,0.365,0.751,0.491
+Recall-leaning,0.2,"Catches more buyers, more false alarms",57.8,93248,20789,176194,0.346,0.818,0.486
